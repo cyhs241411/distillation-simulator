@@ -107,13 +107,13 @@ with tab2:
     p_dist = 0.5 * norm.pdf(x, -4, 1.5) + 0.5 * norm.pdf(x, 4, 1.5)
     p_dist = p_dist / np.sum(p_dist) # 정규화
     
-    # Student 분포 Q 세팅
+# Student 분포 Q 세팅
     if kl_type == "Forward KL (Mean-seeking)":
         # Forward KL: P를 커버하려고 넓게 펴짐 (Zero-avoiding)
         q_dist = norm.pdf(x, 0, 4.5)
         q_dist = q_dist / np.sum(q_dist)
         kl_val = calculate_kl(p_dist, q_dist)
-        formula = "$D_{KL}(P_{teacher} \\parallel Q_{student})$"
+        formula_latex = r"D_{KL}(P_{teacher} \parallel Q_{student})"
         desc = "<b>Mean-seeking (Zero-avoiding)</b><br>학생 모델이 선생님의 모든 지식을 아우르려고 넓게 퍼집니다. 하지만 정작 가운데(확률이 가장 낮은 쓸모없는 곳)를 평균으로 잡아버려 애매하고 흐릿한 결과를 낼 수 있습니다. (전통적인 분류 문제의 KD 방식)"
         q_color = "#ff7f0e"
     else:
@@ -121,7 +121,7 @@ with tab2:
         q_dist = norm.pdf(x, 4, 1.5) # 오른쪽 봉우리 선택
         q_dist = q_dist / np.sum(q_dist)
         kl_val = calculate_kl(q_dist, p_dist)
-        formula = "$D_{KL}(Q_{student} \\parallel P_{teacher})$"
+        formula_latex = r"D_{KL}(Q_{student} \parallel P_{teacher})"
         desc = "<b>Mode-seeking (Zero-forcing)</b><br>학생 모델이 양쪽을 다 가지는 것을 포기하고, 선생님의 가장 확실한 한쪽 정답(봉우리)에 완벽하게 집중합니다. (최신 LLM, Diffusion 모델 등 생성형 AI에서 선명한 결과물을 내기 위해 선호됨)"
         q_color = "#2ca02c"
 
@@ -134,20 +134,26 @@ with tab2:
         template="plotly_dark", height=500,
         title=f"선택된 최적화: {kl_type}",
         xaxis_title="데이터 / 예측 범위", yaxis_title="확률 밀도 (Probability Density)",
-        plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)"
+        plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)",
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
     )
     
     col_k1, col_k2 = st.columns([1, 2])
+    
     with col_k1:
+        # 1. 제목
+        st.markdown(f"<h3 style='color: {q_color}; margin-bottom: 0;'>💡 수식 및 분석</h3>", unsafe_allow_html=True)
+        
+        # 2. 수식 (Streamlit 전용 latex 함수 사용 -> 완벽하게 렌더링 됨!)
+        st.latex(formula_latex)
+        
+        # 3. 설명 박스 (디자인 유지)
         st.markdown(f"""
-        <div class="info-box" style="border-left-color: {q_color}; height: 400px;">
-            <h3>수식 및 분석</h3>
-            <div style="font-size: 24px; text-align: center; margin-bottom: 20px;">
-                {formula}
-            </div>
-            <p style="font-size: 16px; line-height: 1.6;">{desc}</p>
+        <div style="background-color: #1e1e1e; padding: 20px; border-radius: 12px; border-left: 6px solid {q_color}; margin-top: 10px;">
+            <p style="font-size: 16px; line-height: 1.6; color: #dddddd; margin-bottom: 0;">{desc}</p>
         </div>
         """, unsafe_allow_html=True)
+        
     with col_k2:
         st.plotly_chart(fig_kl, use_container_width=True)
 
