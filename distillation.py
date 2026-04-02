@@ -37,7 +37,7 @@ def calculate_kl(p, q):
 # ==========================================
 # 3. 사이드바 UI
 # ==========================================
-st.sidebar.title("🧪 지식 증류 패널")
+st.sidebar.title(" 지식 증류 패널")
 st.sidebar.markdown("Teacher의 지식을 Student에게 전달!")
 
 st.sidebar.markdown("---")
